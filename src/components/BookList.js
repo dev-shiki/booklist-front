@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BookService from "../services/BookService";
 
-const BookList = ({ books, setBooks, categories }) => {
+const BookList = ({ books: initialBooks, setBooks, categories: initialCategories }) => {
+  const [books, setLocalBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [newBook, setNewBook] = useState({
     title: "",
     author: "",
@@ -13,6 +15,15 @@ const BookList = ({ books, setBooks, categories }) => {
 
   const [editBookId, setEditBookId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (Array.isArray(initialBooks)) {
+      setLocalBooks(initialBooks);
+    }
+    if (Array.isArray(initialCategories)) {
+      setCategories(initialCategories);
+    }
+  }, [initialBooks, initialCategories]);
 
   const handleAddBook = async () => {
     if (!newBook.title || !newBook.author || !newBook.publicationDate || !newBook.category_id) {
@@ -61,7 +72,8 @@ const BookList = ({ books, setBooks, categories }) => {
   const handleEditBook = (book) => {
     setNewBook({
       ...book,
-      publicationDate: book.publicationDate.split('T')[0]
+      publicationDate: book.publicationDate.split('T')[0],
+      category_id: book.category_id ? book.category_id.toString() : ''
     });
     setEditBookId(book.id);
   };
@@ -103,7 +115,7 @@ const BookList = ({ books, setBooks, categories }) => {
             <h3 className="font-semibold text-lg">{book.title}</h3>
             <p className="text-gray-600">by {book.author}</p>
               <span className="text-sm text-gray-600">
-                Published: {new Date(book.publicationDate).toLocaleDateString()} <br />
+                Published: {book.publicationDate ? new Date(book.publicationDate).toLocaleDateString() : 'Unknown'} <br />
                 Category: {categories.find((cat) => cat.id === book.category_id)?.name || "Unknown"}
               </span>
             </div>
@@ -188,7 +200,7 @@ const BookList = ({ books, setBooks, categories }) => {
         >
           {isLoading ? "Processing..." : (editBookId ? "Update Book" : "Add Book")}
         </button>
-        
+
       </div>
     </div>
     </div>
